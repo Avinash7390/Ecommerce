@@ -30,7 +30,7 @@ const customErrorHandler = (err, req, res, next) => {
 
   res.status(err.statusCode).json({
     success: false,
-    errorMessage: err.message,
+    message: err.message,
   });
 };
 

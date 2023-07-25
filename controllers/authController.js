@@ -6,7 +6,7 @@ import { comparePassword, hashPassword } from "../utils/authUtils.js";
 import jwt from "jsonwebtoken";
 
 const registerController = AsynkErrorHandler(async (req, res, next) => {
-  const { name, email, password, phone, address } = req.body;
+  const { name, email, password, phone, address, answer } = req.body;
 
   if (!name) {
     return next(new Errorhandler("Please Enter your Name", 400));
@@ -25,11 +25,17 @@ const registerController = AsynkErrorHandler(async (req, res, next) => {
   if (!address) {
     return next(new Errorhandler("Please Enter Your Address", 400));
   }
+  if (!answer) {
+    return next(new Errorhandler("Please Enter Your Answer", 400));
+  }
   //existing user...
   const user = await User.findOne({ email });
 
   if (user) {
-    return next(new Errorhandler("User already exist please login", 400));
+    return res.status(400).json({
+      success: false,
+      message: "User already Exist Please login!",
+    });
   }
 
   const hashedPassword = await hashPassword(password);
@@ -40,6 +46,7 @@ const registerController = AsynkErrorHandler(async (req, res, next) => {
     password: hashedPassword,
     phone,
     address,
+    answer,
   });
 
   res.status(200).json({
@@ -91,4 +98,38 @@ const testController = AsynkErrorHandler(async (req, res, next) => {
   });
 });
 
-export { registerController, loginController, testController };
+//forgot password....
+
+const forgotPasswordController = AsynkErrorHandler(async (req, res, next) => {
+  const { email, answer, newPassword } = req.body;
+
+  if (!email) {
+    return next(new Errorhandler("Email is required!", 400));
+  }
+  if (!answer) {
+    return next(new Errorhandler("Answer is required!", 400));
+  }
+  if (!newPassword) {
+    return next(new Errorhandler("Password is required!", 400));
+  }
+
+  const user = await User.findOne({ email, answer });
+
+  if (!user) {
+    return next(new Errorhandler("Wrong Email or Answer", 404));
+  }
+  const hashed = await hashPassword(newPassword);
+  await User.findByIdAndUpdate(user._id, { password: hashed });
+
+  res.status(201).json({
+    success: true,
+    message: "Password Reset Successfully!",
+  });
+});
+
+export {
+  registerController,
+  loginController,
+  testController,
+  forgotPasswordController,
+};
