@@ -40,7 +40,7 @@ const Login = () => {
   };
 
   return (
-    <Layout>
+    <Layout title={"Login - Ecommerce Web"}>
       <div className="form-container">
         <form onSubmit={handleSubmit}>
           <h4 className="title">Login Form</h4>

@@ -83,10 +83,12 @@ const loginController = AsynkErrorHandler(async (req, res, next) => {
     message: "login successfully",
     token,
     user: {
+      _id: user._id,
       name: user.name,
       email: user.email,
       phone: user.phone,
       address: user.address,
+      role: user.role,
     },
   });
 });
