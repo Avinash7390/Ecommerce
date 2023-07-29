@@ -163,6 +163,90 @@ const updateProductController = AsynkErrorHandler(async (req, res, next) => {
   });
 });
 
+//filter product........
+
+const productFilterController = AsynkErrorHandler(async (req, res, next) => {
+  const { checked, radio } = req.body;
+  let args = {};
+  if (checked.length > 0) args.category = checked;
+  if (radio.length) args.price = { $gte: radio[0], $lte: radio[1] };
+
+  const products = await Product.find(args);
+
+  res.status(200).json({
+    success: true,
+    products,
+  });
+});
+
+//product count......
+
+const productCountController = AsynkErrorHandler(async (req, res, next) => {
+  const total = await Product.find({}).estimatedDocumentCount();
+
+  res.status(200).json({
+    success: true,
+    total,
+  });
+});
+
+//product per page.....
+
+const productPerPageController = AsynkErrorHandler(async (req, res, next) => {
+  const perPage = 6;
+  const page = req.params.page ? req.params.page : 1;
+
+  const products = await Product.find({})
+    .select("-photo")
+    .skip((page - 1) * perPage)
+    .limit(perPage)
+    .sort({ createdAt: -1 });
+  res.status(200).json({
+    success: true,
+    products,
+  });
+});
+
+//serach product
+
+const searchProductController = AsynkErrorHandler(async (req, res, next) => {
+  const { keyword } = req.params;
+  const result = await Product.find({
+    $or: [
+      { name: { $regex: keyword, $options: "i" } },
+      { description: { $regex: keyword, $options: "i" } },
+    ],
+  }).select("-photo");
+  res.send(result);
+});
+
+//related product.....
+const relatedProductController = AsynkErrorHandler(async (req, res, next) => {
+  const { pid, cid } = req.params;
+  const products = await Product.find({
+    category: cid,
+    _id: { $ne: pid },
+  })
+    .select("-photo")
+    .limit(3)
+    .populate("category");
+  res.status(200).json({
+    success: true,
+    products,
+  });
+});
+
+//category wise product......
+const productCategoryController = AsynkErrorHandler(async (req, res, next) => {
+  const category = await Category.findOne({ slug: req.params.slug });
+  const products = await Product.find({ category }).populate("category");
+  res.status(200).json({
+    success: true,
+    category,
+    products,
+  });
+});
+
 export {
   createProductController,
   getProductController,
@@ -170,4 +254,10 @@ export {
   getPhotoController,
   deleteProductController,
   updateProductController,
+  productFilterController,
+  productCountController,
+  productPerPageController,
+  searchProductController,
+  relatedProductController,
+  productCategoryController,
 };
