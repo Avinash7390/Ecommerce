@@ -28,6 +28,9 @@ const registerController = AsynkErrorHandler(async (req, res, next) => {
   if (!answer) {
     return next(new Errorhandler("Please Enter Your Answer", 400));
   }
+  if (password && password.length < 6) {
+    return next(new Errorhandler("Password length is less than 6 character"));
+  }
   //existing user...
   const user = await User.findOne({ email });
 
@@ -129,9 +132,41 @@ const forgotPasswordController = AsynkErrorHandler(async (req, res, next) => {
   });
 });
 
+//update Profile......
+
+const updateProfileController = AsynkErrorHandler(async (req, res, next) => {
+  const { name, email, password, address, phone } = req.body;
+
+  const user = await User.findById(req.user._id);
+
+  if (password && password.length < 6) {
+    return next(new Errorhandler("Password length is less than 6 character"));
+  }
+
+  const hashedPassword = password ? hashPassword(password) : undefined;
+
+  const updatedUser = await User.findByIdAndUpdate(
+    req.user._id,
+    {
+      name: name || user.name,
+      address: address || user.address,
+      phone: phone || user.phone,
+      password: hashedPassword || user.password,
+    },
+    { new: true }
+  );
+
+  res.status(200).json({
+    success: true,
+    message: "Updated Successfully!",
+    updatedUser,
+  });
+});
+
 export {
   registerController,
   loginController,
   testController,
   forgotPasswordController,
+  updateProfileController,
 };
