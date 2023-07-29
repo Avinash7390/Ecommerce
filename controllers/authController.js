@@ -137,7 +137,7 @@ const forgotPasswordController = AsynkErrorHandler(async (req, res, next) => {
 const updateProfileController = AsynkErrorHandler(async (req, res, next) => {
   const { name, email, password, address, phone } = req.body;
 
-  const user = await User.findById(req.user._id);
+  const user = await User.find({ email });
 
   if (password && password.length < 6) {
     return next(new Errorhandler("Password length is less than 6 character"));
