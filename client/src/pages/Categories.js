@@ -8,13 +8,15 @@ const Categories = () => {
 
   return (
     <Layout title={"All - Categories"}>
-      <div className="container">
+      <div className="container " style={{ marginTop: "100px" }}>
         <div className="row">
           {categories?.map((c) => (
             <div className="col-md-6 mt-3 mb-3 gx-3 gy-3">
-              <Link to={`/category/${c.slug}`} className="btn btn-outline-info">
-                {c.name}
-              </Link>
+              <div className="card TotalCat">
+                <Link to={`/category/${c.slug}`} className="btn cat-btn">
+                  {c.name}
+                </Link>
+              </div>
             </div>
           ))}
         </div>

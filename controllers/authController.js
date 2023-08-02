@@ -1,4 +1,5 @@
 import { userModel as User } from "../models/userModel.js";
+import { orderModel as Order } from "../models/orderModel.js";
 
 import AsynkErrorHandler from "../error/catchAsyncError.js";
 import Errorhandler from "../utils/errorClass.js";
@@ -163,10 +164,50 @@ const updateProfileController = AsynkErrorHandler(async (req, res, next) => {
   });
 });
 
+//order controller....
+
+const orderController = AsynkErrorHandler(async (req, res, next) => {
+  const orders = await Order.find({ buyers: req.user._id })
+    .populate("products", "-photo")
+    .populate("buyers", "name");
+  res.status(200).json({
+    success: true,
+    orders,
+  });
+});
+
+//all orders controller...
+
+const AllOrderController = AsynkErrorHandler(async (req, res, next) => {
+  const orders = await Order.find({})
+    .populate("products", "-photo")
+    .populate("buyers", "name")
+    .sort({ createdAt: "-1" });
+  res.status(200).json({
+    success: true,
+    orders,
+  });
+});
+
+const updateOrderController = AsynkErrorHandler(async (req, res, next) => {
+  const { orderID } = req.params;
+  const { status } = req.body;
+
+  const orders = await Order.findByIdAndUpdate(
+    orderID,
+    { status },
+    { new: true }
+  );
+  res.json(orders);
+});
+
 export {
   registerController,
   loginController,
   testController,
   forgotPasswordController,
   updateProfileController,
+  orderController,
+  AllOrderController,
+  updateOrderController,
 };
